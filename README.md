@@ -1,9 +1,13 @@
 # Pantry · 茶水间
 
 A [Claude Code](https://claude.com/claude-code) skill that generates a
-beautiful, real-news AI digest webpage in the **Pantry** style — masonry
-cards, cream palette, bilingual EN/ZH, click-to-expand modals with
-original source links and community reactions.
+beautiful, real-news **daily digest webpage** in the **Pantry** style —
+masonry cards, cream palette, bilingual EN/ZH, click-to-expand modals
+with original source links and community reactions.
+
+**Default topic is AI** (with a curated 16-source roster). But the skill
+is topic-agnostic — point it at biotech, climate, finance, sports,
+fashion, your favorite niche, and it figures out the sources.
 
 > All stories are **real**, fetched live from public sources. No invented
 > news, no fake engagement numbers, no fabricated quotes.
@@ -31,28 +35,29 @@ cd ~/.claude/skills/pantry-digest && git pull
 
 | Command | What it does |
 |---|---|
-| `/pantry-generate [scope]` | Generate today's digest. Scope is free-form: `"this week"`, `"focus on robotics"`, `"only my custom sources"`, `"in Chinese only"`, `"to ~/Desktop/pantry.html"`. |
-| `/pantry-add <name-or-url>` | Add a source. Examples: `/pantry-add https://stratechery.com/` or `/pantry-add Import AI https://jack-clark.net/ paper`. |
+| `/pantry-generate [scope]` | Generate today's digest. Scope is free-form: `"this week"`, `"focus on robotics"`, `"biotech news"`, `"finance digest"`, `"only my custom sources"`, `"in Chinese only"`, `"to ~/Desktop/today.html"`. |
+| `/pantry-add <name-or-url>` | Add a source. Examples: `/pantry-add https://stratechery.com/` or `/pantry-add STAT News https://www.statnews.com/ news_aggregator`. |
 | `/pantry-remove <name>` | Remove a source. Confirmation required for default sources. |
 | `/pantry-list` | List all configured sources, grouped by defaults vs custom. |
 | `/pantry-sources [filter]` | Filtered list: `newsletters`, `priority 1`, `custom`, `search anthropic`, etc. |
 | `/pantry-help` | Show the command list. |
 
 Natural-language triggers also work: *"refresh the pantry"*, *"茶水间一下"*,
-*"make me a daily AI digest"* — all route to `/pantry-generate`.
+*"make me a daily AI digest"*, *"daily climate digest please"* — all route
+to `/pantry-generate`.
 
 ## What it does on each run
 
-1. Runs **parallel WebSearch** queries to discover today's biggest AI stories
+1. Runs **parallel WebSearch** queries to discover today's biggest stories
+   (in your topic, AI by default)
 2. **WebFetches** the chosen articles, newsletters, and HN / X / Reddit threads
 3. Extracts **real cover images** (og:image / hero image) when available;
    falls back to brand-colored SVG covers when not
-4. Composes **10–12 cards** spanning model releases, products, papers,
-   industry moves, funding, policy, opinion, and community signals
-5. Renders a self-contained `index.html` at `AI Redbook/index.html` (or
-   wherever you ask)
+4. Composes **10–12 cards** spanning the categories that matter for the topic
+5. Renders a self-contained `pantry-digest.html` in the current directory
+   (or wherever you ask)
 
-## Default source roster
+## Default source roster (AI topic)
 
 | Category | Sources |
 |---|---|
@@ -66,29 +71,38 @@ X / Reddit / news URL that hits Hacker News, with real points and comment
 counts — the only auth-free way to get real X / Reddit engagement data
 from inside Claude Code.
 
-## Adding your own sources
+## Using a non-AI topic
 
-Easiest:
+Three ways, pick whichever fits:
 
+**1. One-shot — let the agent search for sources.**
 ```
-/pantry-add https://stratechery.com/
+/pantry-generate today's biotech news
 ```
+The agent will WebSearch for biotech sources, pick credible ones (STAT,
+Endpoints, NEJM, etc.), and build the digest. No setup required.
 
-The agent will fetch the URL, infer a sensible name / category / brand
-color, and ask you to confirm anything it can't infer.
+**2. Build a custom roster over time.**
+```
+/pantry-add https://www.statnews.com/
+/pantry-add https://endpts.com/
+/pantry-add https://www.nejm.org/
+/pantry-generate biotech, only my custom sources
+```
+Future runs reuse the roster instantly.
 
-Manual: edit `default-sources.yaml` and append under `custom:`:
+**3. Manual — edit `default-sources.yaml` and append under `custom:`**:
 
 ```yaml
 custom:
-  - name: Stratechery
-    short: Strat
-    url: https://stratechery.com/
-    kind: newsletter
-    brand_color: "#2D3142"
-    text_color: "#F4B860"
+  - name: STAT News
+    short: STAT
+    url: https://www.statnews.com/
+    kind: news_aggregator
+    brand_color: "#E5184C"
+    text_color: "#FFFFFF"
     priority: 1
-    category: opinion
+    category: industry
 ```
 
 ## File layout
@@ -104,7 +118,7 @@ pantry-digest/
 │   ├── list.md           ← /pantry-list
 │   ├── sources.md        ← /pantry-sources
 │   └── help.md           ← /pantry-help
-├── default-sources.yaml  ← 16 default sources + your custom slot
+├── default-sources.yaml  ← 16 default AI sources + your custom slot
 ├── template.html         ← HTML shell with __NEWS_JSON__ placeholder
 ├── LICENSE
 └── README.md             ← this file
@@ -118,8 +132,8 @@ pantry-digest/
 - **Real quotes** — every quote traces to a real person on the record
 - **Today's news by default** — last 24h; widens to 48h or 7d only if needed
 - **English by default** — toggle to Chinese with the top-right button
-- **Same layout, any sources** — your custom sources slot into the same
-  masonry grid with brand-color covers
+- **Same layout, any topic, any sources** — biotech digest looks just as
+  good as an AI digest
 
 ## Refusal behavior
 

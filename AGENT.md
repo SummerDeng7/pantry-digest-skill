@@ -5,16 +5,21 @@ end-to-end before doing any fetching.
 
 ## What this skill produces
 
-A single self-contained `index.html` file rendered in the Pantry style
+A single self-contained `pantry-digest.html` file rendered in the Pantry style
 (瀑布流卡片网格 · 奶油色调 · 中英双语切换 · Fraunces 衬线 + Inter 无衬线 ·
 点击卡片打开模态层 · 模态层包含原文链接 + 网络评论). Default output path:
-`AI Redbook/index.html` in the current working directory, unless the user
+`pantry-digest.html` in the current working directory, unless the user
 specifies otherwise.
 
 The HTML inherits all styles, i18n and rendering logic from
 [`template.html`](template.html). Your job is to **fetch real news**,
 **select 10–12 stories**, **build a JSON array**, and **substitute it into
 the template's placeholders**. No CSS or render-logic edits.
+
+**Topic-agnostic.** The skill's defaults are tuned for AI news (16-source
+roster in `default-sources.yaml`), but the same pipeline works for any
+news topic — biotech, climate, finance, sports, fashion, gaming, etc. See
+"Topic detection" below.
 
 ---
 
@@ -29,7 +34,7 @@ Mapping:
 
 | Slash command | Playbook | Touches |
 |---|---|---|
-| `/pantry-generate [scope]` | `commands/generate.md` | Reads `default-sources.yaml`, runs Steps 1–9 below, writes `index.html` |
+| `/pantry-generate [scope]` | `commands/generate.md` | Reads `default-sources.yaml`, runs Steps 1–9 below, writes `pantry-digest.html` |
 | `/pantry-add <name/url>` | `commands/add.md` | Writes to `default-sources.yaml` under `custom:` only |
 | `/pantry-remove <name>` | `commands/remove.md` | Edits `default-sources.yaml`, asks before touching `defaults:` |
 | `/pantry-list` | `commands/list.md` | Read-only — renders the source table |
@@ -37,7 +42,7 @@ Mapping:
 | `/pantry-help` | `commands/help.md` | Static help text |
 
 **Natural-language triggers** (without a slash) — "refresh the pantry,"
-"茶水间一下," "make me an AI digest," "update my AI redbook" — all route
+"茶水间一下," "make me an AI digest," "update my pantry-digest page" — all route
 to `/pantry-generate` with the user's words treated as the `[scope]` arg.
 
 If a `/pantry-*` verb is unknown, list the valid ones (run `commands/help.md`).
@@ -58,17 +63,64 @@ If the user has not specified otherwise, **default to "today's news"**:
 If the user offered custom sources or said "use my list," load
 `default-sources.yaml` **and** the user's additions (merge `custom:` block).
 
+### Step 0.5 — Topic detection (which sources apply?)
+
+Decide the topic from the scope argument:
+
+| Scope hint | Topic | Sources to use |
+|---|---|---|
+| No scope, or contains AI / LLM / model / agent / Anthropic / etc. | **AI (default)** | All `defaults:` + any `custom:` |
+| Contains "biotech" / "pharma" / "FDA" / etc. | biotech | `custom:` matches only; if none, WebSearch for credible biotech sources and use those |
+| Contains "climate" / "energy" / "carbon" / etc. | climate | same pattern |
+| Contains "finance" / "markets" / "Fed" / etc. | finance | same pattern |
+| Contains "sports" / "NBA" / "soccer" / etc. | sports | same pattern |
+| Anything else off-AI | as named | same pattern |
+| `"only my custom sources"` | any | `custom:` only, regardless of topic |
+
+**When a non-AI topic is detected and no matching custom sources exist:**
+
+1. Tell the user one sentence: "No biotech sources in your roster — I'll
+   search for credible biotech outlets and use those for this run. Add them
+   permanently with `/pantry-add` later if you want."
+2. Run a WebSearch like:
+   `WebSearch("best biotech news websites 2026 site:nature.com OR site:statnews.com OR site:endpts.com OR site:nejm.org")`
+3. Use the returned outlets as ad-hoc sources for this run. Don't write
+   them to `default-sources.yaml` (that's `/pantry-add`'s job).
+4. Update the hero copy in the rendered HTML — replace "AI" wording with
+   the actual topic. Specifically, override these i18n keys when emitting
+   the final HTML:
+   - `hero-title` EN → `Pull up a chair. <em>Here's what {Topic} is talking about.</em>`
+   - `hero-title` ZH → `搬把椅子过来,<em>看看{Topic}圈在聊什么。</em>`
+   - `hero-sub` → adjust the source list mentioned
+
+If `default-sources.yaml` has user-added sources that match the topic
+(e.g., user added STAT News and Endpoints), prefer those over WebSearch
+discovery.
+
 ### Step 1 — **WebSearch first**, always
 
 WebSearch is the primary discovery tool. **Run it before any WebFetch.**
 
-Run **at least 3 parallel WebSearch queries** in a single message:
+Run **at least 3 parallel WebSearch queries** in a single message, tuned
+to the topic detected in Step 0.5:
 
+**For the default AI topic:**
 ```
 WebSearch("AI news <today's date> Anthropic OR OpenAI OR Google DeepMind")
 WebSearch("AI model release <today's date> open source OR benchmark")
 WebSearch("AI industry <today's date> funding OR acquisition OR partnership")
 ```
+
+**For other topics**, generalize:
+```
+WebSearch("<topic> news <today's date>")
+WebSearch("<topic> <typical-subcategory-1> <today's date>")
+WebSearch("<topic> <typical-subcategory-2> <today's date>")
+```
+
+For example, biotech → ("biotech news 2026", "FDA approval 2026", "pharma
+M&A 2026"); finance → ("markets today", "Fed rate decision", "earnings
+this week"); sports → ("NBA news today", "Premier League news", etc.).
 
 Add user-specified topic queries if they asked for an angle ("focus on robotics,"
 "only model releases," etc.).
@@ -225,7 +277,7 @@ Before finalizing:
    - `__HERO_COUNT__` → number of cards (e.g., `11`)
    - `__HERO_SOURCES__` → number of unique sources cited
 3. Write the result to the user's target path
-   (default `AI Redbook/index.html`, override via user instruction).
+   (default `pantry-digest.html`, override via user instruction).
 4. Report back to the user with: card count, source count, what the lead
    card is, and the absolute path.
 

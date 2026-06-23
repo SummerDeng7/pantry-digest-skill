@@ -64,7 +64,7 @@ custom:
 - Source already exists (same URL or same name in either `defaults:` or
   `custom:`) → tell the user, offer `/pantry-remove` to swap or
   `/pantry-add <name> as a replacement` to overwrite.
-- Source clearly off-topic for an AI digest → confirm with the user before
+- Source clearly outside any news / digest use case → confirm with the user before
   adding.
 
 ## Examples

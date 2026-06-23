@@ -15,7 +15,7 @@ original source links and community reactions.
 ## Install
 
 ```bash
-git clone https://github.com/<your-handle>/pantry-digest ~/.claude/skills/pantry-digest
+git clone https://github.com/SummerDeng7/pantry-digest-skill ~/.claude/skills/pantry-digest
 ```
 
 That's it. Restart Claude Code; the skill auto-loads. Run `/pantry-help`

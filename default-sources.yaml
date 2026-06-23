@@ -1,0 +1,200 @@
+# Pantry — default information sources
+#
+# This file is the *default* roster. Users can override by passing
+# their own sources file path (--sources path.yaml) when invoking the
+# skill, or by editing this file in place.
+#
+# The agent reads this to know:
+#   1) Which sources to search by default
+#   2) Each source's brand color & display name (for fallback cover art)
+#   3) Source categories (so the digest spans different angles)
+#
+# Schema for each entry:
+#   name:         display name shown on the card (string, required)
+#   short:        2-12 char short label shown on the cover (string, required)
+#   url:          canonical homepage / news page (string, required)
+#   kind:         one of: lab_blog, news_aggregator, newsletter, social, forum, paper, mirror_api (string, required)
+#   brand_color:  hex for fallback brand cover bg (string, required)
+#   text_color:   hex for the mark text on the cover (string, required)
+#   accent:       optional rgba for decorative accents
+#   priority:     1 (must check) | 2 (should check) | 3 (nice-to-have)
+#   category:     one of: model_release, product, paper, industry, funding,
+#                 opensource, opinion, policy, safety, community, workflow,
+#                 benchmark, digest
+#   note:         free-form hint for the agent
+
+defaults:
+  # ============ COMPANY / LAB BLOGS ============
+  - name: Anthropic
+    short: Anthropic
+    url: https://www.anthropic.com/news
+    kind: lab_blog
+    brand_color: "#CC785C"
+    text_color: "#FAF7F0"
+    priority: 1
+    category: model_release
+    note: "Direct WebFetch works. Real OG images often available on individual posts."
+
+  - name: OpenAI
+    short: OpenAI
+    url: https://openai.com/news/
+    kind: lab_blog
+    brand_color: "#10A37F"
+    text_color: "#FFFFFF"
+    priority: 1
+    category: model_release
+    note: "Often returns 403 to WebFetch. Fall back to TechCrunch/Verge coverage of OpenAI posts."
+
+  - name: Google Blog
+    short: Google
+    url: https://blog.google/technology/ai/
+    kind: lab_blog
+    brand_color: "#4285F4"
+    text_color: "#FFFFFF"
+    priority: 1
+    category: model_release
+
+  - name: Google DeepMind
+    short: DeepMind
+    url: https://deepmind.google/discover/blog/
+    kind: lab_blog
+    brand_color: "#4285F4"
+    text_color: "#FFFFFF"
+    priority: 1
+    category: paper
+
+  - name: Microsoft AI
+    short: Microsoft
+    url: https://news.microsoft.com/source/topics/ai/
+    kind: lab_blog
+    brand_color: "#0078D4"
+    text_color: "#FFFFFF"
+    priority: 2
+    category: product
+    note: "Old URL blogs.microsoft.com/ai/ now 301-redirects here."
+
+  - name: Mistral AI
+    short: Mistral
+    url: https://mistral.ai/news
+    kind: lab_blog
+    brand_color: "#FA520F"
+    text_color: "#FFFFFF"
+    priority: 2
+    category: opensource
+
+  # ============ NEWS / AGGREGATORS ============
+  - name: TechCrunch AI
+    short: TC AI
+    url: https://techcrunch.com/category/artificial-intelligence/
+    kind: news_aggregator
+    brand_color: "#0A9243"
+    text_color: "#FFFFFF"
+    priority: 1
+    category: industry
+    note: "Article bodies fetch cleanly. Pull URLs from the category page first, then fetch each."
+
+  - name: Hugging Face Blog
+    short: HF Blog
+    url: https://huggingface.co/blog
+    kind: news_aggregator
+    brand_color: "#FFD21E"
+    text_color: "#1A1A1A"
+    priority: 2
+    category: benchmark
+
+  - name: arXiv cs.AI
+    short: arXiv
+    url: https://arxiv.org/list/cs.AI/recent
+    kind: paper
+    brand_color: "#B31B1B"
+    text_color: "#FFFFFF"
+    priority: 3
+    category: paper
+
+  # ============ NEWSLETTERS ============
+  - name: Every
+    short: Every
+    url: https://every.to/newsletter
+    kind: newsletter
+    brand_color: "#1F1F1F"
+    text_color: "#FFD166"
+    priority: 1
+    category: workflow
+    note: "User-curated. Philosophy + workflow angle. WebFetch returns clean issue list."
+
+  - name: The Rundown
+    short: Rundown
+    url: https://www.therundown.ai/
+    kind: newsletter
+    brand_color: "#0F1626"
+    text_color: "#F4E3B2"
+    priority: 1
+    category: digest
+    note: "User-curated. Newsroom-style daily digest."
+
+  - name: Superhuman AI
+    short: Superhuman
+    url: https://www.superhuman.ai/
+    kind: newsletter
+    brand_color: "#7C5CFF"
+    text_color: "#FFFFFF"
+    priority: 1
+    category: product
+    note: "User-curated. Product + tools angle."
+
+  - name: Lenny's Newsletter
+    short: Lenny's
+    url: https://www.lennysnewsletter.com/archive
+    kind: newsletter
+    brand_color: "#FF6B35"
+    text_color: "#FFFFFF"
+    priority: 2
+    category: opinion
+    note: "User-curated. Monthly-depth frameworks. Don't expect weekly news."
+
+  # ============ SOCIAL / FORUMS (via accessible mirrors) ============
+  - name: Hacker News
+    short: HN
+    url: https://news.ycombinator.com/
+    kind: forum
+    brand_color: "#FF6600"
+    text_color: "#FFFFFF"
+    priority: 1
+    category: community
+    note: "Direct fetch works. ALSO use as an indirect lens onto X/Reddit (see hn_algolia below)."
+
+  - name: HN Algolia (for X / Reddit / WSJ visibility)
+    short: X · HN · Reddit
+    url: https://hn.algolia.com/api/v1/search
+    kind: mirror_api
+    brand_color: "#000000"
+    text_color: "#FAF7F0"
+    priority: 1
+    category: community
+    note: |
+      Reddit (reddit.com/old.reddit.com/mirrors) and X/Twitter (nitter mirrors)
+      are blocked or unreliable from WebFetch. Use HN's Algolia API as a proxy:
+      it indexes every X/Reddit/news URL that hits HN with real points & comment counts.
+      Query examples:
+        ?tags=story&numericFilters=created_at_i>{epoch}&query=Anthropic&hitsPerPage=15
+        ?tags=story&numericFilters=created_at_i>{epoch}&query=twitter.com&hitsPerPage=15
+      Compute {epoch} as `today_utc_midnight - 7*86400`.
+
+# ============ USER-DEFINED SOURCES ============
+# Append your own entries here. The agent will mix them in with priority=1 sources
+# and respect their categories so the final digest spans different angles.
+#
+# Example:
+# custom:
+#   - name: Stratechery
+#     short: Strat
+#     url: https://stratechery.com/
+#     kind: newsletter
+#     brand_color: "#2D3142"
+#     text_color: "#F4B860"
+#     priority: 1
+#     category: opinion
+#     note: "Strategic analysis."
+#
+# Add as many as you like. The agent will fetch them in parallel and weave them in.
+custom: []

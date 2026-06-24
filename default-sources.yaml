@@ -82,6 +82,47 @@ defaults:
     priority: 2
     category: opensource
 
+  # ---- Chinese AI giants (P1 — must check for full-picture AI coverage) ----
+  - name: ByteDance Doubao
+    short: Doubao
+    url: https://www.doubao.com/chat/
+    kind: lab_blog
+    brand_color: "#0E0E0E"
+    text_color: "#FF6E40"
+    priority: 1
+    category: product
+    note: "ByteDance's flagship consumer AI. For news, prefer their tech blog or Volcengine announcements. WebSearch is usually more reliable than fetching the chat page."
+
+  - name: Alibaba Qwen
+    short: Qwen
+    url: https://qwenlm.github.io/
+    kind: lab_blog
+    brand_color: "#FF6A00"
+    text_color: "#FFFFFF"
+    priority: 1
+    category: model_release
+    note: "Alibaba's Qwen team posts release notes here; HuggingFace card pages also count as a source for new Qwen drops."
+
+  - name: Tencent Hunyuan
+    short: Hunyuan
+    url: https://cloud.tencent.com/product/hunyuan
+    kind: lab_blog
+    brand_color: "#0052D9"
+    text_color: "#FFFFFF"
+    priority: 1
+    category: product
+    note: "Tencent Cloud's Hunyuan landing page. For news, WebSearch ('Tencent Hunyuan release <date>') usually surfaces more than the page itself."
+
+  - name: DeepSeek
+    short: DeepSeek
+    url: https://api-docs.deepseek.com/news
+    kind: lab_blog
+    brand_color: "#4D6BFE"
+    text_color: "#FFFFFF"
+    priority: 1
+    category: model_release
+    note: "Frequently used as a benchmark comparison target. Check their news page AND their HuggingFace org for new model drops."
+
   # ============ NEWS / AGGREGATORS ============
   - name: TechCrunch AI
     short: TC AI

@@ -102,17 +102,44 @@ discovery.
 
 WebSearch is the primary discovery tool. **Run it before any WebFetch.**
 
-Run **at least 3 parallel WebSearch queries** in a single message, tuned
-to the topic detected in Step 0.5:
+Run **at least 4 parallel WebSearch queries** in a single message, tuned
+to the topic detected in Step 0.5.
 
-**For the default AI topic:**
-```
-WebSearch("AI news <today's date> Anthropic OR OpenAI OR Google DeepMind")
-WebSearch("AI model release <today's date> open source OR benchmark")
-WebSearch("AI industry <today's date> funding OR acquisition OR partnership")
-```
+**For the default AI topic, queries MUST follow this priority order — the
+order both decides search effort AND how many cards each tier deserves
+(see Step 5):**
 
-**For other topics**, generalize:
+> **P1 (highest) — Products, tools, and model releases / updates.** The
+> single most important tier. Major US and Chinese labs:
+>
+> ```
+> WebSearch("Anthropic OR OpenAI OR Google DeepMind release update <today's date>")
+> WebSearch("Microsoft Copilot OR Gemini OR ChatGPT OR Claude OR Mistral release <today's date>")
+> WebSearch("ByteDance Doubao OR Alibaba Qwen OR Tencent Hunyuan OR DeepSeek release <today's date>")
+> WebSearch("AI coding agent OR new AI product launch <today's date>")
+> ```
+>
+> **P2 — Industry moves and opinion.** What people in the field think about
+> recent releases, where the industry is heading.
+>
+> ```
+> WebSearch("AI industry analysis <today's date> Stratechery OR The Information")
+> WebSearch("AI takes OR commentary <today's date> Andrej Karpathy OR Yann LeCun OR Demis Hassabis")
+> ```
+>
+> **P3 — Papers and research.** What academia / research labs are working
+> on. Lower volume — usually 1–2 cards.
+>
+> ```
+> WebSearch("arXiv AI paper <today's date> OR NeurIPS OR ICLR")
+> ```
+>
+> **P4 (lowest) — Funding and open-source releases.** Cover only if there
+> is a genuinely large or strategic story. Skip routine seed rounds and
+> minor GitHub drops.
+
+**For other topics**, generalize the same shape — strongest signal first,
+academic/research mid, fundraising last:
 ```
 WebSearch("<topic> news <today's date>")
 WebSearch("<topic> <typical-subcategory-1> <today's date>")
@@ -189,16 +216,29 @@ URL first and swap on `onerror`. To enable that, set the news item's
 
 ### Step 5 — Compose the digest
 
-Aim for **10–12 cards** covering **at least 5 different categories**
-(see `default-sources.yaml#category` list). Distribution rule of thumb:
+Aim for **10–12 cards** covering **at least 4 categories**. **Card count
+per tier MUST follow the priority order from Step 1.** This is the single
+most important shape decision — it's how a reader feels the digest.
 
-- 2–3 model_release / paper / opensource cards
-- 2–3 product / industry / funding cards
-- 1–2 policy / safety cards
-- 1 opinion / workflow card from a newsletter
-- 1 integrated **community** card (X · HN · Reddit signals)
-- 1 integrated **digest** card (cross-newsletter signal scan) — only if
-  ≥3 newsletters are converging on a story
+**For the default AI topic, target distribution:**
+
+| Priority | Card count | What goes here | Canonical `category` values |
+|---|---|---|---|
+| **P1 — Products / Tools / Models** | **5–6 cards** | Major lab releases, model updates, new products and dev tools. Heavy emphasis. | `product`, `model_release`, `tool` |
+| **P2 — Industry & Opinion** | **3–4 cards** | Industry shifts, partnerships, commentary, hot takes, where things are heading | `industry`, `opinion`, `policy`, `community` (1 integrated X/HN card lives here), `digest` (cross-newsletter scan if ≥3 newsletters converge) |
+| **P3 — Research** | **1–2 cards** | Papers worth flagging, lab benchmarks, methodology contributions | `paper`, `safety`, `benchmark` |
+| **P4 — Funding / Open Source** | **0–1 cards each** | Only include if genuinely big (≥$500M round, or a real frontier-tier open-source drop). Skip noise. | `funding`, `opensource` |
+
+**If you can't fill P1 with 5–6 cards from real news**, lower the total
+card count to 9–10 rather than padding with P3/P4 — readers come for
+products and models.
+
+**Don't double-count.** Each card has exactly one `category`. A "Google
+releases DiffusionGemma" story is `model_release`, not both
+`model_release` AND `paper`, even though there's an arXiv link.
+
+**For other (non-AI) topics**, generalize the same shape: dominant tier
+gets ~half the cards, secondary tier gets ~third, the rest are taper.
 
 ### Step 6 — Build the NEWS array
 
@@ -207,7 +247,13 @@ Each card is one object in the array. Schema:
 ```js
 {
   id: 1,                                    // unique integer 1..N
-  tag: { en: 'Model Release', zh: '模型发布' },
+  tag: { en: 'Model Release', zh: '模型发布' },  // display label on the card
+  category: 'model_release',                // REQUIRED. Canonical category for filter chips.
+                                            // One of: product, model_release, tool, industry,
+                                            // opinion, policy, community, digest, paper, safety,
+                                            // benchmark, funding, opensource, workflow.
+                                            // The renderer writes this onto <article data-category="...">
+                                            // and the filter chips key off it.
   aspectRatio: '4/5',                       // vary: '4/5' '3/4' '1/1' '5/4' '16/11'
   image: 'https://.../hero.jpg',            // REAL image URL preferred
   imageFallback: 'data:image/svg+xml,...',  // brandCover() SVG — optional

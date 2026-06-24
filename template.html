@@ -663,14 +663,13 @@
 
 <!-- ============ FILTERS ============ -->
 <div class="filters">
-  <button class="chip active" data-i18n="chip-all">All</button>
-  <button class="chip" data-i18n="chip-models">Model Release</button>
-  <button class="chip" data-i18n="chip-product">Product & Tools</button>
-  <button class="chip" data-i18n="chip-paper">Paper & Research</button>
-  <button class="chip" data-i18n="chip-industry">Industry</button>
-  <button class="chip" data-i18n="chip-funding">Funding</button>
-  <button class="chip" data-i18n="chip-opensource">Open Source</button>
-  <button class="chip" data-i18n="chip-opinion">Opinion</button>
+  <button class="chip active" data-filter="all" data-i18n="chip-all">All</button>
+  <button class="chip" data-filter="product_model" data-i18n="chip-product-model">Products, Tools & Models</button>
+  <button class="chip" data-filter="industry" data-i18n="chip-industry">Industry</button>
+  <button class="chip" data-filter="opinion" data-i18n="chip-opinion">Opinion</button>
+  <button class="chip" data-filter="research" data-i18n="chip-research">Research</button>
+  <button class="chip" data-filter="funding" data-i18n="chip-funding">Funding</button>
+  <button class="chip" data-filter="opensource" data-i18n="chip-opensource">Open Source</button>
 </div>
 
 <!-- ============ FEED ============ -->
@@ -736,13 +735,12 @@ const I18N = {
     'hero-sources': 'from <strong>__HERO_SOURCES__</strong> sources',
     'hero-updated': 'All links go to the original',
     'chip-all': 'All',
-    'chip-models': 'Model Release',
-    'chip-product': 'Product & Tools',
-    'chip-paper': 'Paper & Research',
+    'chip-product-model': 'Products, Tools & Models',
     'chip-industry': 'Industry',
+    'chip-opinion': 'Opinion',
+    'chip-research': 'Research',
     'chip-funding': 'Funding',
     'chip-opensource': 'Open Source',
-    'chip-opinion': 'Opinion',
     'footer': 'The Pantry · Where the AI conversation happens · © 2026',
     'read-source': 'Read the original',
     'comments-title': 'Community takes',
@@ -759,13 +757,12 @@ const I18N = {
     'hero-sources': '来自 <strong>__HERO_SOURCES__</strong> 个信源',
     'hero-updated': '所有链接均指向原文',
     'chip-all': '全部',
-    'chip-models': '模型发布',
-    'chip-product': '产品 & 工具',
-    'chip-paper': '论文 & 研究',
+    'chip-product-model': '产品 / 工具 / 模型',
     'chip-industry': '行业动态',
+    'chip-opinion': '观点',
+    'chip-research': '论文 / 研究',
     'chip-funding': '融资',
     'chip-opensource': '开源',
-    'chip-opinion': '观点',
     'footer': '茶水间 · AI 圈的话题都在这里 · © 2026',
     'read-source': '阅读原文',
     'comments-title': '网友热评',
@@ -803,7 +800,7 @@ const feed = document.getElementById('feed');
 
 function renderCard(n) {
   return `
-    <article class="card" data-id="${n.id}">
+    <article class="card" data-id="${n.id}" data-category="${n.category || 'industry'}">
       <div class="cover" style="aspect-ratio: ${n.aspectRatio};">
         <span class="cover-tag">${pick(n.tag)}</span>
         <img src="${n.image}" alt="${pick(n.headline)}" loading="lazy">
@@ -900,10 +897,26 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ============ FILTER CHIPS ============
+function applyFilter(filterKey) {
+  const cards = document.querySelectorAll('.card');
+  let shown = 0;
+  cards.forEach(card => {
+    const cat = card.getAttribute('data-category') || '';
+    const visible = (filterKey === 'all') || (cat === filterKey)
+      || (filterKey === 'product_model' && (cat === 'product' || cat === 'model_release' || cat === 'tool'))
+      || (filterKey === 'research' && (cat === 'paper' || cat === 'safety'))
+      || (filterKey === 'industry' && (cat === 'community' || cat === 'policy'))
+      || (filterKey === 'opinion' && (cat === 'workflow' || cat === 'digest' || cat === 'benchmark'));
+    card.style.display = visible ? '' : 'none';
+    if (visible) shown++;
+  });
+  // optional: surface "no matches" via a tiny banner (TBD). For now silent.
+}
 document.querySelectorAll('.chip').forEach(chip => {
   chip.addEventListener('click', () => {
     document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
     chip.classList.add('active');
+    applyFilter(chip.getAttribute('data-filter') || 'all');
   });
 });
 

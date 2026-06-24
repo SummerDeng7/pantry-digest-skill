@@ -36,6 +36,9 @@ No arguments.
 >
 > - `/pantry-list` — show all configured sources.
 > - `/pantry-sources <filter>` — filtered view (newsletters / priority 1 / custom / etc.)
+> - `/pantry-issue [title]` — file a bug / feature request / question against
+>   the upstream skill repo. Uses your `gh` CLI account; falls back to a
+>   pre-filled browser link if `gh` isn't installed.
 > - `/pantry-help` — this message.
 >
 > **Natural language also works.** "Refresh the pantry" / "茶水间一下"

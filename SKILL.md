@@ -1,6 +1,6 @@
 ---
 name: pantry-digest
-description: "Generate a daily digest webpage from real news sources (茶水间 · The Pantry style — masonry cards, cream palette, bilingual EN/ZH, click-to-expand modals with original source links and community reactions). Defaults to AI news with a curated 16-source roster (Anthropic, OpenAI, Google, DeepMind, Microsoft, Mistral, TechCrunch, HuggingFace, arXiv, Every, The Rundown, Superhuman, Lenny's, HN, plus X/Reddit via HN Algolia). Works for ANY topic — pass a topic scope (biotech, climate, finance, sports, fashion, etc.) and the agent will search for the right sources or use what you've added. All stories are real, no invented data. Output: pantry-digest.html in the current directory. Commands — /pantry-generate, /pantry-add, /pantry-remove, /pantry-list, /pantry-sources, /pantry-help. Trigger words — pantry, the pantry, 茶水间, refresh the pantry, daily digest, AI digest, AI 日报, news digest page, daily roundup, generate the pantry, pantry 一下."
+description: "Generate a daily digest webpage from real news sources (茶水间 · The Pantry style — masonry cards, cream palette, bilingual EN/ZH, click-to-expand modals with original source links and community reactions). Defaults to AI news with a curated 16-source roster (Anthropic, OpenAI, Google, DeepMind, Microsoft, Mistral, TechCrunch, HuggingFace, arXiv, Every, The Rundown, Superhuman, Lenny's, HN, plus X/Reddit via HN Algolia). Works for ANY topic — pass a topic scope (biotech, climate, finance, sports, fashion, etc.) and the agent will search for the right sources or use what you've added. All stories are real, no invented data. Output: pantry-digest.html in the current directory. Commands — /pantry-generate, /pantry-add, /pantry-remove, /pantry-list, /pantry-sources, /pantry-issue, /pantry-help. Trigger words — pantry, the pantry, 茶水间, refresh the pantry, daily digest, AI digest, AI 日报, news digest page, daily roundup, generate the pantry, pantry 一下, file pantry issue, report pantry bug."
 ---
 
 # The Pantry · 茶水间 Skill
@@ -38,6 +38,7 @@ When the user types `/pantry-*`, read the matching file under `commands/`
 | `/pantry-remove <name>` | Remove a source from `default-sources.yaml`. Refuses on ambiguous matches. | [`commands/remove.md`](commands/remove.md) |
 | `/pantry-list` | List all currently active sources, grouped by `defaults:` vs `custom:`, with their category and priority. | [`commands/list.md`](commands/list.md) |
 | `/pantry-sources [scope]` | Same as `/pantry-list` but filterable by category, priority, or kind. | [`commands/sources.md`](commands/sources.md) |
+| `/pantry-issue [title]` | File a GitHub issue (bug, feature request, question) against the upstream skill repo. Uses your `gh` CLI account; falls back to a pre-filled browser URL if `gh` isn't available. | [`commands/issue.md`](commands/issue.md) |
 | `/pantry-help` | Show the command list and quick-start. | [`commands/help.md`](commands/help.md) |
 
 ## When to invoke (no command typed)

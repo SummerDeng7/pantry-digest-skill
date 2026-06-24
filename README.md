@@ -40,6 +40,7 @@ cd ~/.claude/skills/pantry-digest && git pull
 | `/pantry-remove <name>` | Remove a source. Confirmation required for default sources. |
 | `/pantry-list` | List all configured sources, grouped by defaults vs custom. |
 | `/pantry-sources [filter]` | Filtered list: `newsletters`, `priority 1`, `custom`, `search anthropic`, etc. |
+| `/pantry-issue [title]` | File a GitHub issue (bug / feature / question) against this repo. Uses your `gh` CLI; falls back to a pre-filled browser link. |
 | `/pantry-help` | Show the command list. |
 
 Natural-language triggers also work: *"refresh the pantry"*, *"茶水间一下"*,
@@ -117,6 +118,7 @@ pantry-digest/
 │   ├── remove.md         ← /pantry-remove
 │   ├── list.md           ← /pantry-list
 │   ├── sources.md        ← /pantry-sources
+│   ├── issue.md          ← /pantry-issue
 │   └── help.md           ← /pantry-help
 ├── default-sources.yaml  ← 16 default AI sources + your custom slot
 ├── template.html         ← HTML shell with __NEWS_JSON__ placeholder

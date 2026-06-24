@@ -39,6 +39,7 @@ Mapping:
 | `/pantry-remove <name>` | `commands/remove.md` | Edits `default-sources.yaml`, asks before touching `defaults:` |
 | `/pantry-list` | `commands/list.md` | Read-only — renders the source table |
 | `/pantry-sources [filter]` | `commands/sources.md` | Read-only — filtered table |
+| `/pantry-issue [title]` | `commands/issue.md` | Files a GitHub issue against the upstream repo via `gh`; falls back to a pre-filled browser URL |
 | `/pantry-help` | `commands/help.md` | Static help text |
 
 **Natural-language triggers** (without a slash) — "refresh the pantry,"

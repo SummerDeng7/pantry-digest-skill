@@ -102,44 +102,58 @@ discovery.
 
 WebSearch is the primary discovery tool. **Run it before any WebFetch.**
 
-Run **at least 4 parallel WebSearch queries** in a single message, tuned
+Run **at least 5 parallel WebSearch queries** in a single message, tuned
 to the topic detected in Step 0.5.
 
-**For the default AI topic, queries MUST follow this priority order — the
-order both decides search effort AND how many cards each tier deserves
-(see Step 5):**
+**For the default AI topic, queries MUST follow this 5-tier priority order
+— the same order drives card distribution in Step 5.** This is the binding
+roster from `default-sources.yaml`:
 
-> **P1 (highest) — Products, tools, and model releases / updates.** The
-> single most important tier. Major US and Chinese labs:
+> **P1 — Model / Product Release  ·  模型/产品发布.** Highest signal. Must
+> sweep every run.
 >
 > ```
-> WebSearch("Anthropic OR OpenAI OR Google DeepMind release update <today's date>")
-> WebSearch("Microsoft Copilot OR Gemini OR ChatGPT OR Claude OR Mistral release <today's date>")
-> WebSearch("ByteDance Doubao OR Alibaba Qwen OR Tencent Hunyuan OR DeepSeek release <today's date>")
-> WebSearch("AI coding agent OR new AI product launch <today's date>")
+> WebSearch("Anthropic Claude OR OpenAI GPT OR Google Gemini OR DeepMind release <today's date>")
+> WebSearch("Meta Llama OR Mistral OR xAI Grok OR Microsoft Copilot release <today's date>")
+> WebSearch("DeepSeek OR Qwen OR 豆包 OR 混元 OR Kimi OR GLM OR ERNIE OR MiniMax 发布 <today's date>")
+> WebSearch("AI coding agent OR developer tool launch <today's date>")
 > ```
 >
-> **P2 — Industry moves and opinion.** What people in the field think about
-> recent releases, where the industry is heading.
+> **P2 — Opinion / Experience  ·  观点/体验.** What the field's thinkers
+> write about this week's releases.
 >
 > ```
-> WebSearch("AI industry analysis <today's date> Stratechery OR The Information")
-> WebSearch("AI takes OR commentary <today's date> Andrej Karpathy OR Yann LeCun OR Demis Hassabis")
+> WebSearch("Latent Space OR Interconnects OR Import AI OR Every <today's date>")
+> WebSearch("Andrej Karpathy OR Nathan Lambert OR Ethan Mollick OR Ben Thompson AI take <today's date>")
 > ```
 >
-> **P3 — Papers and research.** What academia / research labs are working
-> on. Lower volume — usually 1–2 cards.
+> **P3 — Media Heat  ·  媒体热点.** Daily news velocity. Use to spot the
+> day's shared signal across multiple outlets (a story covered by Rundown
+> AND Superhuman AND TLDR AI is signal, not noise).
 >
 > ```
-> WebSearch("arXiv AI paper <today's date> OR NeurIPS OR ICLR")
+> WebSearch("AI news today site:therundown.ai OR site:superhuman.ai OR site:tldr.tech")
+> WebSearch("AI 新闻 量子位 OR 机器之心 <today's date>")
+> WebSearch("HN top AI thread today")
 > ```
 >
-> **P4 (lowest) — Funding and open-source releases.** Cover only if there
-> is a genuinely large or strategic story. Skip routine seed rounds and
-> minor GitHub drops.
+> **P4 — Investment / Insight  ·  投资/洞察.** Funding rounds, VC takes.
+> Only surface if genuinely large ($500M+) or strategically important.
+>
+> ```
+> WebSearch("AI startup funding round <today's date> a16z OR Sequoia OR YC")
+> ```
+>
+> **P5 — Academic Frontier  ·  学术前沿.** Lowest priority. Only surface
+> a paper if WebSearch shows multiple outlets / threads citing it (i.e.,
+> the field has noticed). Skip raw arXiv drops with no traction.
+>
+> ```
+> WebSearch("HuggingFace daily papers trending AI <today's date>")
+> ```
 
 **For other topics**, generalize the same shape — strongest signal first,
-academic/research mid, fundraising last:
+academic/research last:
 ```
 WebSearch("<topic> news <today's date>")
 WebSearch("<topic> <typical-subcategory-1> <today's date>")
@@ -216,22 +230,36 @@ URL first and swap on `onerror`. To enable that, set the news item's
 
 ### Step 5 — Compose the digest
 
-Aim for **10–12 cards** covering **at least 4 categories**. **Card count
-per tier MUST follow the priority order from Step 1.** This is the single
-most important shape decision — it's how a reader feels the digest.
+Aim for **10–15 cards** total, covering **at least 4 of the 5 sections**.
+**Card count per tier MUST follow the priority order from Step 1.** This
+is the single most important shape decision — it's how a reader feels the
+digest.
+
+Card selection criteria — pick stories that score high on either:
+- **Overlap / signal convergence** — same story appearing across multiple
+  sources within a tier (e.g., Rundown + Superhuman + TLDR AI all leading
+  with the same release).
+- **Trend heat** — high HN points / comment counts via Algolia, multiple
+  Chinese outlets running it, a model being benchmarked-against in the
+  same week.
 
 **For the default AI topic, target distribution:**
 
 | Priority | Card count | What goes here | Canonical `category` values |
 |---|---|---|---|
-| **P1 — Products / Tools / Models** | **5–6 cards** | Major lab releases, model updates, new products and dev tools. Heavy emphasis. | `product`, `model_release`, `tool` |
-| **P2 — Industry & Opinion** | **3–4 cards** | Industry shifts, partnerships, commentary, hot takes, where things are heading | `industry`, `opinion`, `policy`, `community` (1 integrated X/HN card lives here), `digest` (cross-newsletter scan if ≥3 newsletters converge) |
-| **P3 — Research** | **1–2 cards** | Papers worth flagging, lab benchmarks, methodology contributions | `paper`, `safety`, `benchmark` |
-| **P4 — Funding / Open Source** | **0–1 cards each** | Only include if genuinely big (≥$500M round, or a real frontier-tier open-source drop). Skip noise. | `funding`, `opensource` |
+| **P1 — Model / Product Release** | **5–7 cards** | Major lab releases, model updates, new products and dev tools from the 18 P1 sources. Heaviest emphasis. | `product`, `model_release`, `tool` |
+| **P2 — Opinion / Experience** | **2–3 cards** | Newsletter essays, individual analyst takes (Latent Space, Interconnects, Import AI, Every, etc.). Pick the deepest 2–3, not the most. | `opinion`, `workflow` |
+| **P3 — Media Heat** | **2–3 cards** | Industry moves, partnerships, regulatory news. **Strongly prefer integrated cards here** — if 3+ media outlets converge on a story, make one card titled e.g. "What 4 outlets all led with today" with each outlet's framing as a `<a class="src">` block. | `industry`, `community`, `digest` |
+| **P4 — Investment / Insight** | **0–2 cards** | Funding only if ≥$500M or strategically pivotal. VC essays only if argument is fresh. Skip routine seed rounds. | `funding` |
+| **P5 — Academic Frontier** | **0–2 cards** | Paper only if WebSearch shows multiple outlets / threads citing it. Skip raw arXiv drops with no traction. | `paper`, `safety`, `benchmark` |
 
-**If you can't fill P1 with 5–6 cards from real news**, lower the total
-card count to 9–10 rather than padding with P3/P4 — readers come for
-products and models.
+**Use integration cards.** Both P3 (cross-media signal) and P2 (cross-newsletter
+signal) can absorb 1 integration card. See AGENT.md "Step 7 — Integration-card
+rules" for the `<a class="src">` block format.
+
+**If you can't fill P1 with 5–7 cards from real news**, lower the total
+card count to 10 rather than padding lower tiers — readers come for products
+and models.
 
 **Don't double-count.** Each card has exactly one `category`. A "Google
 releases DiffusionGemma" story is `model_release`, not both

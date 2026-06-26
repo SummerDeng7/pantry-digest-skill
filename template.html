@@ -664,12 +664,11 @@
 <!-- ============ FILTERS ============ -->
 <div class="filters">
   <button class="chip active" data-filter="all" data-i18n="chip-all">All</button>
-  <button class="chip" data-filter="product_model" data-i18n="chip-product-model">Products, Tools & Models</button>
-  <button class="chip" data-filter="industry" data-i18n="chip-industry">Industry</button>
-  <button class="chip" data-filter="opinion" data-i18n="chip-opinion">Opinion</button>
-  <button class="chip" data-filter="research" data-i18n="chip-research">Research</button>
-  <button class="chip" data-filter="funding" data-i18n="chip-funding">Funding</button>
-  <button class="chip" data-filter="opensource" data-i18n="chip-opensource">Open Source</button>
+  <button class="chip" data-filter="release" data-i18n="chip-release">Models & Products</button>
+  <button class="chip" data-filter="opinion" data-i18n="chip-opinion">Opinion & Experience</button>
+  <button class="chip" data-filter="media" data-i18n="chip-media">Media Heat</button>
+  <button class="chip" data-filter="investment" data-i18n="chip-investment">Investment & Insight</button>
+  <button class="chip" data-filter="research" data-i18n="chip-research">Academic Frontier</button>
 </div>
 
 <!-- ============ FEED ============ -->
@@ -735,12 +734,11 @@ const I18N = {
     'hero-sources': 'from <strong>__HERO_SOURCES__</strong> sources',
     'hero-updated': 'All links go to the original',
     'chip-all': 'All',
-    'chip-product-model': 'Products, Tools & Models',
-    'chip-industry': 'Industry',
-    'chip-opinion': 'Opinion',
-    'chip-research': 'Research',
-    'chip-funding': 'Funding',
-    'chip-opensource': 'Open Source',
+    'chip-release': 'Models & Products',
+    'chip-opinion': 'Opinion & Experience',
+    'chip-media': 'Media Heat',
+    'chip-investment': 'Investment & Insight',
+    'chip-research': 'Academic Frontier',
     'footer': 'The Pantry · Where the AI conversation happens · © 2026',
     'read-source': 'Read the original',
     'comments-title': 'Community takes',
@@ -757,12 +755,11 @@ const I18N = {
     'hero-sources': '来自 <strong>__HERO_SOURCES__</strong> 个信源',
     'hero-updated': '所有链接均指向原文',
     'chip-all': '全部',
-    'chip-product-model': '产品 / 工具 / 模型',
-    'chip-industry': '行业动态',
-    'chip-opinion': '观点',
-    'chip-research': '论文 / 研究',
-    'chip-funding': '融资',
-    'chip-opensource': '开源',
+    'chip-release': '模型与产品发布',
+    'chip-opinion': '观点与体验',
+    'chip-media': '媒体热点',
+    'chip-investment': '投资与洞察',
+    'chip-research': '学术前沿',
     'footer': '茶水间 · AI 圈的话题都在这里 · © 2026',
     'read-source': '阅读原文',
     'comments-title': '网友热评',
@@ -897,20 +894,23 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ============ FILTER CHIPS ============
+// Maps each chip's data-filter value to the set of canonical card categories
+// it should show. Matches the 5-section taxonomy in default-sources.yaml.
+const FILTER_MAP = {
+  all:        null,  // shows everything
+  release:    ['model_release', 'product', 'tool', 'opensource'],
+  opinion:    ['opinion', 'workflow'],
+  media:      ['industry', 'community', 'digest', 'policy'],
+  investment: ['funding'],
+  research:   ['paper', 'safety', 'benchmark'],
+};
 function applyFilter(filterKey) {
-  const cards = document.querySelectorAll('.card');
-  let shown = 0;
-  cards.forEach(card => {
+  const allowed = FILTER_MAP[filterKey];
+  document.querySelectorAll('.card').forEach(card => {
     const cat = card.getAttribute('data-category') || '';
-    const visible = (filterKey === 'all') || (cat === filterKey)
-      || (filterKey === 'product_model' && (cat === 'product' || cat === 'model_release' || cat === 'tool'))
-      || (filterKey === 'research' && (cat === 'paper' || cat === 'safety'))
-      || (filterKey === 'industry' && (cat === 'community' || cat === 'policy'))
-      || (filterKey === 'opinion' && (cat === 'workflow' || cat === 'digest' || cat === 'benchmark'));
+    const visible = (allowed === null) || allowed.includes(cat);
     card.style.display = visible ? '' : 'none';
-    if (visible) shown++;
   });
-  // optional: surface "no matches" via a tiny banner (TBD). For now silent.
 }
 document.querySelectorAll('.chip').forEach(chip => {
   chip.addEventListener('click', () => {

@@ -1,23 +1,28 @@
-# /pantry-add
+# commands/add.md — natural-language "add a source"
 
 **Purpose:** Add a new source to `default-sources.yaml` under the `custom:`
-block so it appears in all future `/pantry-generate` runs.
+block so it appears in all future `/pantry-digest` runs.
 
-## Argument form
+## How users invoke this
 
-```
-/pantry-add <name-or-url> [extra hints]
-```
+Natural language only. Any of these phrasings should route here:
 
-The agent must be tolerant of how the user gives input. All of these
-should work:
+- "add Stratechery as a source"
+- "add https://stratechery.com/ to my sources"
+- "新加一个信源 importai.net"
+- "把 Ben's Bites 加进来"
+- "添加 Import AI 这个 newsletter"
 
-| User input | Behavior |
+## Argument extraction
+
+From the user's message, extract whatever is present:
+
+| User said | Extracted |
 |---|---|
-| `/pantry-add https://stratechery.com/` | Infer `name=Stratechery` from the URL; ask for category and brand color in one follow-up if not derivable. |
-| `/pantry-add Ben's Bites https://bensbites.com newsletter` | Use exactly what was provided. |
-| `/pantry-add Import AI` | URL missing — ask the user for the URL in a single follow-up. |
-| `/pantry-add Stratechery https://stratechery.com opinion #2D3142` | Full spec — name, URL, category, brand color. Write immediately. |
+| "add https://stratechery.com/" | URL only; infer `name=Stratechery` from page title |
+| "add Ben's Bites https://bensbites.com newsletter" | name + URL + kind |
+| "add Import AI" | name only; ask user for the URL in one follow-up |
+| "add Stratechery https://stratechery.com opinion #2D3142" | name + URL + category + brand color |
 
 ## YAML entry the agent will write
 
@@ -56,22 +61,22 @@ custom:
    - Do NOT touch the `defaults:` block.
    - If `custom:` was `[]`, replace it with a real list.
 6. Confirm to the user: "Added <name> as a <category> source. Next
-   `/pantry-generate` will include it."
+   `/pantry-digest` will include it."
 
 ## Refusal
 
 - URL doesn't resolve / 403s on first fetch → tell the user, don't add.
 - Source already exists (same URL or same name in either `defaults:` or
-  `custom:`) → tell the user, offer `/pantry-remove` to swap or
-  `/pantry-add <name> as a replacement` to overwrite.
-- Source clearly outside any news / digest use case → confirm with the user before
-  adding.
+  `custom:`) → tell the user, suggest they ask to remove the old one first or
+  rephrase to overwrite.
+- Source clearly outside any news / digest use case → confirm with the user
+  before adding.
 
 ## Examples
 
 **Example 1 — minimum input:**
 ```
-/pantry-add https://www.ben-evans.com/newsletter
+User: add https://www.ben-evans.com/newsletter as a source
 ```
 Agent fetches the URL, infers `name=Benedict Evans`, `kind=newsletter`,
 `category=opinion`, derives a brand color from the favicon, asks the user
@@ -80,7 +85,7 @@ Agent fetches the URL, infers `name=Benedict Evans`, `kind=newsletter`,
 
 **Example 2 — full spec:**
 ```
-/pantry-add Import AI https://jack-clark.net/ paper #5B6B7A
+User: add Import AI from https://jack-clark.net/ — it's a paper / research newsletter
 ```
 Agent writes immediately — all fields present. Replies: "Added Import AI as
-a paper source. Next generate will include it."
+a paper source. Next `/pantry-digest` will include it."

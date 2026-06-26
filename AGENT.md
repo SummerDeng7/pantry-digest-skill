@@ -3,6 +3,29 @@
 This is the binding behavior contract for the `pantry-digest` skill. Read it
 end-to-end before doing any fetching.
 
+> ## 🛑 HARD RULES — violations break the user's trust
+>
+> 1. **You MUST read `template.html` and substitute placeholders.** You
+>    MUST NOT hand-write HTML "in the Pantry style." The output file is
+>    `template.html` with `__NEWS_JSON__` / `__HERO_*__` markers replaced.
+>    Nothing else. No exceptions.
+>    - How to verify: after writing the output, the file should be the
+>      same byte length as `template.html` ±(NEWS json size). If it's
+>      drastically smaller, you wrote your own HTML — go back and use
+>      the template.
+> 2. **You MUST update `i18n` keys only by substituting `__HERO_*__`
+>    placeholders.** The chip set, footer text, brand name and toggle
+>    button are owned by `template.html`; do not rewrite the `I18N` dict.
+> 3. **Default output filename is `pantry-digest.html` (lowercase, in
+>    CWD).** Do not write to `AI Redbook/index.html` or any other path
+>    unless the user names a path on the command.
+> 4. **Card count: 10–15.** Sourced from real reachable URLs only.
+> 5. **Default language is English.** Do not change `let LANG = 'en'`
+>    in the output unless the user said "in Chinese only".
+>
+> If any of these are about to be violated, STOP and tell the user
+> instead of generating a broken page.
+
 ## What this skill produces
 
 A single self-contained `pantry-digest.html` file rendered in the Pantry style
@@ -13,40 +36,47 @@ specifies otherwise.
 
 The HTML inherits all styles, i18n and rendering logic from
 [`template.html`](template.html). Your job is to **fetch real news**,
-**select 10–12 stories**, **build a JSON array**, and **substitute it into
-the template's placeholders**. No CSS or render-logic edits.
+**select 10–15 stories**, **build a JSON array**, and **substitute it into
+the template's placeholders**. No CSS or render-logic edits, no hand-
+written HTML.
 
-**Topic-agnostic.** The skill's defaults are tuned for AI news (16-source
+**Topic-agnostic.** The skill's defaults are tuned for AI news (56-source
 roster in `default-sources.yaml`), but the same pipeline works for any
 news topic — biotech, climate, finance, sports, fashion, gaming, etc. See
 "Topic detection" below.
 
 ---
 
-## Command routing — read FIRST when the user types a slash command
+## Command routing — how to dispatch user input
 
-If the user's message begins with `/pantry-<verb>`, the command-specific
-playbook in [`commands/<verb>.md`](commands/) is the source of truth for
-**what to do** in that turn. This file (AGENT.md) describes the underlying
-mechanics — how to fetch news, render the page, handle integration cards.
+There is only ONE slash command in this skill: `/pantry-digest`. Everything
+else is natural-language. Route based on the message shape:
 
-Mapping:
+**1. Slash command — `/pantry-digest [scope]`** — read
+[`commands/digest.md`](commands/digest.md) first. The scope is free-form
+natural language (topic, time window, source filter, output path, language).
 
-| Slash command | Playbook | Touches |
-|---|---|---|
-| `/pantry-generate [scope]` | `commands/generate.md` | Reads `default-sources.yaml`, runs Steps 1–9 below, writes `pantry-digest.html` |
-| `/pantry-add <name/url>` | `commands/add.md` | Writes to `default-sources.yaml` under `custom:` only |
-| `/pantry-remove <name>` | `commands/remove.md` | Edits `default-sources.yaml`, asks before touching `defaults:` |
-| `/pantry-list` | `commands/list.md` | Read-only — renders the source table |
-| `/pantry-sources [filter]` | `commands/sources.md` | Read-only — filtered table |
-| `/pantry-issue [title]` | `commands/issue.md` | Files a GitHub issue against the upstream repo via `gh`; falls back to a pre-filled browser URL |
-| `/pantry-help` | `commands/help.md` | Static help text |
+**2. Natural-language verb** — when the user's message is not a slash
+command but expresses one of these intents, read the matching playbook
+before responding:
 
-**Natural-language triggers** (without a slash) — "refresh the pantry,"
-"茶水间一下," "make me an AI digest," "update my pantry-digest page" — all route
-to `/pantry-generate` with the user's words treated as the `[scope]` arg.
+| User intent (any language) | Playbook |
+|---|---|
+| Add a source ("add Stratechery", "新加一个信源", "加 importai.net") | `commands/add.md` |
+| Remove a source ("remove ByteDance", "删掉 Mistral", "kill source X") | `commands/remove.md` |
+| List sources ("list sources", "show me the sources", "看看信源") | `commands/list.md` |
+| Filter sources ("show only newsletters", "priority 1 only", "中文媒体") | `commands/sources.md` |
+| File an issue ("file a bug", "report something", "提 issue") | `commands/issue.md` |
+| Help / what can you do | re-emit the ON-LOAD greeting from `SKILL.md` |
 
-If a `/pantry-*` verb is unknown, list the valid ones (run `commands/help.md`).
+**3. Natural-language digest request** — "refresh the pantry," "茶水间一下,"
+"make me a daily AI digest," "今天 AI 圈在聊什么," "今天的 biotech news 给
+我做个 digest" — treat as `/pantry-digest <user's words>` and route to
+`commands/digest.md` with the user's phrasing as the scope argument.
+
+This file (AGENT.md) describes the underlying mechanics — how to fetch
+news, render the page, handle integration cards. The per-verb `commands/`
+playbooks describe each verb's contract.
 
 ---
 
@@ -81,12 +111,13 @@ Decide the topic from the scope argument:
 **When a non-AI topic is detected and no matching custom sources exist:**
 
 1. Tell the user one sentence: "No biotech sources in your roster — I'll
-   search for credible biotech outlets and use those for this run. Add them
-   permanently with `/pantry-add` later if you want."
+   search for credible biotech outlets and use those for this run. To add
+   them permanently, just say 'add <name>' later."
 2. Run a WebSearch like:
    `WebSearch("best biotech news websites 2026 site:nature.com OR site:statnews.com OR site:endpts.com OR site:nejm.org")`
 3. Use the returned outlets as ad-hoc sources for this run. Don't write
-   them to `default-sources.yaml` (that's `/pantry-add`'s job).
+   them to `default-sources.yaml` (that's the job of natural-language
+   "add a source" — see `commands/add.md`).
 4. Update the hero copy in the rendered HTML — replace "AI" wording with
    the actual topic. Specifically, override these i18n keys when emitting
    the final HTML:
@@ -243,15 +274,17 @@ Card selection criteria — pick stories that score high on either:
   Chinese outlets running it, a model being benchmarked-against in the
   same week.
 
-**For the default AI topic, target distribution:**
+**For the default AI topic, target distribution. Each tier here maps
+directly to one filter chip in the rendered page — get the chip mapping
+right or filtering breaks:**
 
-| Priority | Card count | What goes here | Canonical `category` values |
-|---|---|---|---|
-| **P1 — Model / Product Release** | **5–7 cards** | Major lab releases, model updates, new products and dev tools from the 18 P1 sources. Heaviest emphasis. | `product`, `model_release`, `tool` |
-| **P2 — Opinion / Experience** | **2–3 cards** | Newsletter essays, individual analyst takes (Latent Space, Interconnects, Import AI, Every, etc.). Pick the deepest 2–3, not the most. | `opinion`, `workflow` |
-| **P3 — Media Heat** | **2–3 cards** | Industry moves, partnerships, regulatory news. **Strongly prefer integrated cards here** — if 3+ media outlets converge on a story, make one card titled e.g. "What 4 outlets all led with today" with each outlet's framing as a `<a class="src">` block. | `industry`, `community`, `digest` |
-| **P4 — Investment / Insight** | **0–2 cards** | Funding only if ≥$500M or strategically pivotal. VC essays only if argument is fresh. Skip routine seed rounds. | `funding` |
-| **P5 — Academic Frontier** | **0–2 cards** | Paper only if WebSearch shows multiple outlets / threads citing it. Skip raw arXiv drops with no traction. | `paper`, `safety`, `benchmark` |
+| Tier (chip label) | Card count | `data-filter` value | Canonical `category` values | Sources |
+|---|---|---|---|---|
+| **模型与产品发布 · Models & Products** (P1) | **5–7 cards** | `release` | `model_release`, `product`, `tool`, `opensource` | The 18 P1 lab/blog sources |
+| **观点与体验 · Opinion & Experience** (P2) | **2–3 cards** | `opinion` | `opinion`, `workflow` | The 12 P2 newsletter sources |
+| **媒体热点 · Media Heat** (P3) | **2–3 cards** | `media` | `industry`, `community`, `digest`, `policy` | The 12 P3 media + community sources. **Strongly prefer integrated cards here** — if 3+ media outlets converge on a story, make one card titled e.g. "What 4 outlets all led with today" with each outlet's framing as an `<a class="src">` block. |
+| **投资与洞察 · Investment & Insight** (P4) | **0–2 cards** | `investment` | `funding` | The 6 P4 VC / index sources. Only surface if ≥$500M or strategically pivotal. Skip routine seed rounds. |
+| **学术前沿 · Academic Frontier** (P5) | **0–2 cards** | `research` | `paper`, `safety`, `benchmark` | The 7 P5 paper / lab sources. Only surface a paper if WebSearch shows multiple outlets/threads citing it. Skip raw arXiv drops with no traction. |
 
 **Use integration cards.** Both P3 (cross-media signal) and P2 (cross-newsletter
 signal) can absorb 1 integration card. See AGENT.md "Step 7 — Integration-card
@@ -342,18 +375,42 @@ Before finalizing:
 - If a story is from a non-English source, keep the source name in its
   original script (e.g., 量子位, 36Kr).
 
-### Step 9 — Render the page
+### Step 9 — Render the page (MANDATORY: use the template)
 
-1. Read `template.html`.
-2. Substitute:
+**This step is the most common failure mode. Do not skip it.**
+
+1. **Read `template.html`** with the Read tool. This is non-negotiable —
+   do not generate HTML from memory or "the Pantry style." The file is
+   ~930 lines and contains:
+   - All CSS (cream palette, masonry, modal styles, chip styles)
+   - The `I18N` dict (don't rewrite — only substitute placeholders below)
+   - The 7 filter chips with correct labels & data-filter values
+   - The `renderCard()` / `openModal()` / `applyFilter()` JS
+   - The `brandCover()` SVG generator
+2. **Replace exactly these 5 placeholders** in the template string:
    - `__NEWS_JSON__` → `JSON.stringify(NEWS_array, null, 2)`
-   - `__HERO_EYEBROW_EN__` → e.g., `2026 / 06 / 23 · Tuesday`
-   - `__HERO_EYEBROW_ZH__` → e.g., `2026 / 06 / 23 · 周二`
-   - `__HERO_COUNT__` → number of cards (e.g., `11`)
+   - `__HERO_EYEBROW_EN__` → e.g., `2026 / 06 / 25 · Thursday`
+   - `__HERO_EYEBROW_ZH__` → e.g., `2026 / 06 / 25 · 周四`
+   - `__HERO_COUNT__` → number of cards (e.g., `12`)
    - `__HERO_SOURCES__` → number of unique sources cited
-3. Write the result to the user's target path
-   (default `pantry-digest.html`, override via user instruction).
-4. Report back to the user with: card count, source count, what the lead
+3. **Do not touch anything else in the template.** Not the chip set, not
+   the `I18N` dict, not the footer, not the brand text. If you find
+   yourself wanting to "tweak" the template, stop — that's a different
+   commit, not part of generation.
+4. **Write the result to `pantry-digest.html`** in the CWD (Write tool,
+   absolute path). Default name is lowercase `pantry-digest.html`, NOT
+   `AI Redbook/index.html` or any other path, unless the user explicitly
+   said so on the command.
+5. **Self-check before reporting back:**
+   - Output file size should be ≥ template size − 100 bytes
+     (template is ~30 KB; output should be ~30–80 KB depending on news
+     volume). If output is < 10 KB you wrote your own HTML — go back to
+     step 1.
+   - Search the output for `__NEWS_JSON__` — if it still appears, your
+     substitution didn't run. Fix and re-write.
+   - Confirm the chips line contains all 7 filter values:
+     `all, product_model, industry, opinion, research, funding, opensource`.
+6. Report back to the user with: card count, source count, what the lead
    card is, and the absolute path.
 
 ### Step 10 — Default language

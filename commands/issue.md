@@ -1,17 +1,19 @@
-# /pantry-issue
+# commands/issue.md — natural-language "file an issue"
 
 **Purpose:** Help the user file a GitHub issue against the pantry-digest
 skill's upstream repo (`SummerDeng7/pantry-digest-skill`) — for bug
 reports, feature requests, or questions about how the skill behaves.
 
-## Argument form
+## How users invoke this
 
-```
-/pantry-issue [one-line title]
-```
+Natural language only:
 
-- No args → fully interactive: ask the user for title, type, and body.
-- Title given → use it as the issue title, ask for type and body.
+- "file a bug"
+- "report an issue"
+- "submit a feature request"
+- "提个 issue"
+- "我想提个 bug"
+- "I want to suggest a feature for this skill"
 
 ## Upstream repo
 
@@ -44,7 +46,7 @@ or any account where the description says "Enterprise" / "EMU"):
 > Tell the user one sentence: "Your active gh account is
 > `<name>_microsoft` — the issue will be filed under that handle. If
 > you'd rather use your personal account, switch with
-> `gh auth switch -u <other-account>` first, then re-run me."
+> `gh auth switch -u <other-account>` first, then ask me again."
 
 Do **not** auto-switch their account. Wait for them to either confirm
 "go ahead" or switch and re-invoke.
@@ -56,7 +58,7 @@ Ask the user in ONE message:
 > Three quick things and I'll file it:
 >
 > 1. **Type** — bug / feature request / question / other?
-> 2. **Title** — one line (if not already given on the command)
+> 2. **Title** — one line (if not already given)
 > 3. **Description** — what happened, what you expected, anything
 >    relevant. Or just paste the error / behavior you saw.
 >
@@ -80,7 +82,7 @@ Format:
 - Skill version: <output of `cd ~/.claude/skills/pantry-digest && git rev-parse --short HEAD` if it's a git checkout, else "unknown">
 - Claude Code host: <best guess — `code` / `claude` CLI / Desktop — only if obvious; otherwise omit this line>
 
-Filed via `/pantry-issue`.
+Filed via the pantry-digest skill.
 ```
 
 Keep the footer short. Three lines, no more.
@@ -157,7 +159,7 @@ repo to see your reply.
 > I can't file the issue automatically because the `gh` CLI isn't installed
 > on this host. You have two options:
 >
-> 1. **Install gh** — see <https://cli.github.com/>, then re-run `/pantry-issue`.
+> 1. **Install gh** — see <https://cli.github.com/>, then ask me again.
 > 2. **File it in your browser.** Click here to open a pre-filled issue:
 >    <https://github.com/SummerDeng7/pantry-digest-skill/issues/new?title=<url-encoded-title>&body=<url-encoded-body>>
 >
@@ -172,7 +174,7 @@ for them.
 
 > `gh` is installed but not signed in. You have two options:
 >
-> 1. **Sign in** — run `gh auth login` in your terminal, then re-run `/pantry-issue`.
+> 1. **Sign in** — run `gh auth login` in your terminal, then ask me again.
 > 2. **File it in your browser.** Give me the title and description and
 >    I'll generate a pre-filled issue link.
 
@@ -191,9 +193,9 @@ for them.
 
 **Example 1 — bug, interactive:**
 ```
-User: /pantry-issue
+User: file a bug
 Agent: (pre-flight OK) Three quick things...
-User: bug. Sources list isn't loading. Just blank when I run /pantry-list.
+User: bug. Sources list isn't loading. Just blank when I list my sources.
 Agent: (composes, previews) About to file...
 User: go
 Agent: ✅ Issue #5 filed: https://github.com/SummerDeng7/pantry-digest-skill/issues/5
@@ -201,7 +203,7 @@ Agent: ✅ Issue #5 filed: https://github.com/SummerDeng7/pantry-digest-skill/is
 
 **Example 2 — feature with inline title:**
 ```
-User: /pantry-issue Add RSS feed support
+User: I want to suggest a feature: add RSS feed support
 Agent: Got the title. Type is feature request? And what's the use case?
 User: yes, feature. Right now I have to use webfetch on Substack pages...
 Agent: (composes, previews) ...
@@ -209,7 +211,7 @@ Agent: (composes, previews) ...
 
 **Example 3 — no gh installed:**
 ```
-User: /pantry-issue
+User: report an issue
 Agent: I can't file automatically (gh not installed). Want me to make a
        pre-filled browser link? Tell me title + description.
 User: yes. Title: "Spanish UI support". Description: "Would be great..."

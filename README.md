@@ -5,9 +5,10 @@ beautiful, real-news **daily digest webpage** in the **Pantry** style —
 masonry cards, cream palette, bilingual EN/ZH, click-to-expand modals
 with original source links and community reactions.
 
-**Default topic is AI** (with a curated 16-source roster). But the skill
-is topic-agnostic — point it at biotech, climate, finance, sports,
-fashion, your favorite niche, and it figures out the sources.
+**Default topic is AI** (with a curated 56-source roster spanning model
+releases, opinion, media heat, investment, and academic frontier). But
+the skill is topic-agnostic — point it at biotech, climate, finance,
+sports, fashion, your favorite niche, and it figures out the sources.
 
 > All stories are **real**, fetched live from public sources. No invented
 > news, no fake engagement numbers, no fabricated quotes.
@@ -22,8 +23,8 @@ fashion, your favorite niche, and it figures out the sources.
 git clone https://github.com/SummerDeng7/pantry-digest-skill ~/.claude/skills/pantry-digest
 ```
 
-That's it. Restart Claude Code; the skill auto-loads. Run `/pantry-help`
-to see all commands, or just type `refresh the pantry` in natural language.
+That's it. Restart Claude Code; the skill auto-loads. On first activation
+the skill greets you with what it can do.
 
 To update later:
 
@@ -31,46 +32,68 @@ To update later:
 cd ~/.claude/skills/pantry-digest && git pull
 ```
 
-## Slash commands
+## How to use it
 
-| Command | What it does |
+There is one slash command:
+
+```
+/pantry-digest [scope]
+```
+
+`[scope]` is free-form natural language. Examples:
+
+| You type | What happens |
 |---|---|
-| `/pantry-generate [scope]` | Generate today's digest. Scope is free-form: `"this week"`, `"focus on robotics"`, `"biotech news"`, `"finance digest"`, `"only my custom sources"`, `"in Chinese only"`, `"to ~/Desktop/today.html"`. |
-| `/pantry-add <name-or-url>` | Add a source. Examples: `/pantry-add https://stratechery.com/` or `/pantry-add STAT News https://www.statnews.com/ news_aggregator`. |
-| `/pantry-remove <name>` | Remove a source. Confirmation required for default sources. |
-| `/pantry-list` | List all configured sources, grouped by defaults vs custom. |
-| `/pantry-sources [filter]` | Filtered list: `newsletters`, `priority 1`, `custom`, `search anthropic`, etc. |
-| `/pantry-issue [title]` | File a GitHub issue (bug / feature / question) against this repo. Uses your `gh` CLI; falls back to a pre-filled browser link. |
-| `/pantry-help` | Show the command list. |
+| `/pantry-digest` | Today's AI news, all 56 default sources, English UI, `pantry-digest.html` in CWD |
+| `/pantry-digest biotech this week` | Switch topic to biotech, widen window to 7 days |
+| `/pantry-digest focus on AI coding agents` | Stay AI but bias toward coding-agent subtopic |
+| `/pantry-digest only my custom sources` | Skip defaults, use just what you've added |
+| `/pantry-digest in Chinese only` | Render with Chinese UI as initial language |
+| `/pantry-digest to ~/Desktop/today.html` | Override output path |
 
-Natural-language triggers also work: *"refresh the pantry"*, *"茶水间一下"*,
-*"make me a daily AI digest"*, *"daily climate digest please"* — all route
-to `/pantry-generate`.
+**Everything else is natural language.** No more slash commands to memorize.
+Just say what you want:
+
+| Say something like… | And the skill will… |
+|---|---|
+| "add Stratechery as a source" | Add it to your custom sources |
+| "list my sources" | Show all current sources, grouped by default / custom |
+| "show only newsletters" | Filtered view |
+| "remove ByteDance" | Remove the source (with confirmation for defaults) |
+| "file a bug" | Open an interactive issue-filing flow via `gh` |
+| "help" / "what can you do" | Re-display the onboarding greeting |
+
+Natural-language triggers for the digest itself also work: *"refresh the
+pantry"*, *"茶水间一下"*, *"make me a daily AI digest"*, *"daily climate
+digest please"* — all route to `/pantry-digest`.
 
 ## What it does on each run
 
 1. Runs **parallel WebSearch** queries to discover today's biggest stories
-   (in your topic, AI by default)
-2. **WebFetches** the chosen articles, newsletters, and HN / X / Reddit threads
+   (in your topic, AI by default).
+2. **WebFetches** the chosen articles, newsletters, and HN / X / Reddit threads.
 3. Extracts **real cover images** (og:image / hero image) when available;
-   falls back to brand-colored SVG covers when not
-4. Composes **10–12 cards** spanning the categories that matter for the topic
+   falls back to brand-colored SVG covers when not.
+4. Composes **10–15 cards** spanning the 5 priority tiers (Model/Product
+   Release, Opinion/Experience, Media Heat, Investment/Insight, Academic
+   Frontier).
 5. Renders a self-contained `pantry-digest.html` in the current directory
-   (or wherever you ask)
+   (or wherever you ask).
 
-## Default source roster (AI topic)
+## Default source roster (AI topic, 56 sources, 5 priority tiers)
 
-| Category | Sources |
+| Tier | Sources |
 |---|---|
-| Company / lab blogs | Anthropic · OpenAI · Google · Google DeepMind · Microsoft AI · Mistral AI |
-| Aggregators | TechCrunch AI · Hugging Face Blog · arXiv cs.AI |
-| Newsletters | Every · The Rundown · Superhuman AI · Lenny's Newsletter |
-| Community | Hacker News (direct), plus X & Reddit via HN Algolia* |
+| **P1 — Model / Product Release** (19 sources) | Anthropic · Claude Blog · Anthropic Engineering · OpenAI · Google DeepMind · Google AI · Microsoft AI · Meta AI · xAI · Mistral · DeepSeek · Qwen · Doubao · Hunyuan · Kimi · GLM · ERNIE · MiniMax · HN Algolia |
+| **P2 — Opinion / Experience** (12 sources) | Every · Lenny's · Latent Space · Interconnects · Import AI · The Batch · Ahead of AI · Ben's Bites · Exponential View · One Useful Thing · Anthropic Institute · Claude's Corner |
+| **P3 — Media Heat** (12 sources) | Superhuman · TLDR AI · The Rundown · The Neuron · AI Weekly · Hacker News · r/ML · r/LocalLLaMA · r/artificial · X #AITwitter · 机器之心 · 量子位 |
+| **P4 — Investment / Insight** (6 sources) | a16z · a16z Newsletter · Sequoia · YC · Stanford HAI Index · CB Insights |
+| **P5 — Academic Frontier** (7 sources) | arXiv cs.AI · HF Daily Papers · Semantic Scholar · OpenReview · Anthropic Research · Alignment Science Blog · Anthropic Red Team |
 
-*Reddit and X block direct fetching without auth. HN Algolia indexes every
-X / Reddit / news URL that hits Hacker News, with real points and comment
-counts — the only auth-free way to get real X / Reddit engagement data
-from inside Claude Code.
+(Reddit and X block direct fetching without auth. The HN Algolia source
+indexes every X / Reddit / news URL that hits Hacker News, with real points
+and comment counts — the only auth-free way to get real X / Reddit
+engagement data from inside Claude Code.)
 
 ## Using a non-AI topic
 
@@ -78,17 +101,17 @@ Three ways, pick whichever fits:
 
 **1. One-shot — let the agent search for sources.**
 ```
-/pantry-generate today's biotech news
+/pantry-digest today's biotech news
 ```
 The agent will WebSearch for biotech sources, pick credible ones (STAT,
 Endpoints, NEJM, etc.), and build the digest. No setup required.
 
 **2. Build a custom roster over time.**
 ```
-/pantry-add https://www.statnews.com/
-/pantry-add https://endpts.com/
-/pantry-add https://www.nejm.org/
-/pantry-generate biotech, only my custom sources
+User: add https://www.statnews.com/ as a source
+User: add https://endpts.com/
+User: add https://www.nejm.org/
+User: /pantry-digest biotech, only my custom sources
 ```
 Future runs reuse the roster instantly.
 
@@ -110,17 +133,17 @@ custom:
 
 ```
 pantry-digest/
-├── SKILL.md              ← skill entry, frontmatter, command router
+├── SKILL.md              ← skill entry, onboarding greeting, command router
 ├── AGENT.md              ← binding playbook (read first when invoked)
 ├── commands/
-│   ├── generate.md       ← /pantry-generate
-│   ├── add.md            ← /pantry-add
-│   ├── remove.md         ← /pantry-remove
-│   ├── list.md           ← /pantry-list
-│   ├── sources.md        ← /pantry-sources
-│   ├── issue.md          ← /pantry-issue
-│   └── help.md           ← /pantry-help
-├── default-sources.yaml  ← 16 default AI sources + your custom slot
+│   ├── digest.md         ← /pantry-digest playbook
+│   ├── add.md            ← natural-language "add a source"
+│   ├── remove.md         ← natural-language "remove a source"
+│   ├── list.md           ← natural-language "list my sources"
+│   ├── sources.md        ← natural-language "filter sources"
+│   ├── issue.md          ← natural-language "file an issue"
+│   └── help.md           ← natural-language "help"
+├── default-sources.yaml  ← 56 default AI sources + your custom slot
 ├── template.html         ← HTML shell with __NEWS_JSON__ placeholder
 ├── LICENSE
 └── README.md             ← this file
@@ -151,7 +174,7 @@ agent will tell you and ask whether to swap it for an alternative.
 
 ## Requirements
 
-- [Claude Code](https://claude.com/claude-code) (any host: CLI, VSCode, JetBrains)
+- [Claude Code](https://claude.com/claude-code) v2.1.3+ (any host: CLI, VSCode, JetBrains)
 - That's it — no API keys, no Python packages, no MCP servers.
 
 ## License

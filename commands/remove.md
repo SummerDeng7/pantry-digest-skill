@@ -1,14 +1,20 @@
-# /pantry-remove
+# commands/remove.md — natural-language "remove a source"
 
 **Purpose:** Remove a source from `default-sources.yaml`.
 
-## Argument form
+## How users invoke this
 
-```
-/pantry-remove <name-or-url-or-short>
-```
+Natural language only. Any of these phrasings should route here:
 
-Matching is fuzzy but must be unambiguous. Accepts:
+- "remove Stratechery"
+- "delete the source Mistral"
+- "把豆包从信源里删掉"
+- "kill source stratechery.com"
+
+## Argument extraction
+
+From the user's message, extract the **identifier**. Matching is fuzzy but
+must be unambiguous. Accepts:
 
 - Display name (e.g., `Stratechery`)
 - Short label (e.g., `Strat`)
@@ -18,7 +24,7 @@ Matching is fuzzy but must be unambiguous. Accepts:
 ## Steps
 
 1. Read `default-sources.yaml`.
-2. Search both `defaults:` and `custom:` for entries matching the argument.
+2. Search both `defaults:` and `custom:` for entries matching the identifier.
    Match priority: exact `name` → exact `short` → URL host substring → URL exact.
 3. **If 0 matches** → tell the user, list 3 closest names by Levenshtein
    distance, suggest they try one of those.
@@ -27,7 +33,7 @@ Matching is fuzzy but must be unambiguous. Accepts:
 5. **If exactly 1 match**:
    - If it's in `defaults:`, ask for explicit confirmation:
      "This is a default source. Remove it permanently? You can re-add later
-     with `/pantry-add`."
+     by saying 'add <name> as a source'."
    - If it's in `custom:`, remove immediately and confirm.
 6. Rewrite the YAML preserving order and formatting of other entries.
 
@@ -41,20 +47,20 @@ Matching is fuzzy but must be unambiguous. Accepts:
 
 **Example 1 — unambiguous custom source:**
 ```
-/pantry-remove Stratechery
+User: remove Stratechery
 ```
 Agent finds one match in `custom:`, removes it, replies "Removed Stratechery."
 
 **Example 2 — ambiguous:**
 ```
-/pantry-remove Google
+User: remove Google
 ```
 Agent finds `Google Blog` and `Google DeepMind`, replies:
 "Two matches: (1) Google Blog, (2) Google DeepMind. Which one?"
 
 **Example 3 — default source confirmation:**
 ```
-/pantry-remove Anthropic
+User: delete Anthropic from sources
 ```
 Agent replies: "Anthropic is in `defaults:`. Confirm removal? It's the
 primary signal source — most generates lean on it heavily." Waits for

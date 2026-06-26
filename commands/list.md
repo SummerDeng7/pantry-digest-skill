@@ -1,47 +1,42 @@
-# /pantry-list
+# commands/list.md — natural-language "list my sources"
 
 **Purpose:** Show all sources currently configured in `default-sources.yaml`.
 
-## Argument form
+## How users invoke this
 
-```
-/pantry-list
-```
+Natural language only. Any of these phrasings should route here:
 
-No arguments. (Use `/pantry-sources <scope>` for filtered views.)
+- "list sources"
+- "list my sources"
+- "show me the sources"
+- "看看信源"
+- "现在有哪些信源"
+- "我加了哪些信源"
+
+For filtered views (only newsletters / priority 1 / etc.) → route to
+`commands/sources.md` instead.
 
 ## Output format
 
-Render a compact two-column grouped list, EN/ZH-neutral:
+Render a compact grouped list, EN/ZH-neutral:
 
 ```
-DEFAULT SOURCES (16)
+DEFAULT SOURCES (55)
 ────────────────────────────────────────────
-Anthropic           lab_blog     model_release  P1
-OpenAI              lab_blog     model_release  P1
-Google Blog         lab_blog     model_release  P1
-Google DeepMind     lab_blog     paper          P1
-Microsoft AI        lab_blog     product        P2
-Mistral AI          lab_blog     opensource     P2
-TechCrunch AI       news_aggreg  industry       P1
-Hugging Face Blog   news_aggreg  benchmark      P2
-arXiv cs.AI         paper        paper          P3
-Every               newsletter   workflow       P1
-The Rundown         newsletter   digest         P1
-Superhuman AI       newsletter   product        P1
-Lenny's Newsletter  newsletter   opinion        P2
-Hacker News         forum        community      P1
-HN Algolia          mirror_api   community      P1
+Anthropic Newsroom    lab_blog      model_release  P1
+Claude Blog           lab_blog      product        P1
+…
+HN Algolia            mirror_api    community      P1
 
 CUSTOM SOURCES (0)
 ────────────────────────────────────────────
-(none — add with /pantry-add)
+(none — say "add <name> as a source" to add one)
 ```
 
 If `custom:` has entries, list them in the same format.
 
-Closing line: "Run `/pantry-generate` to use these sources." or
-"Add more with `/pantry-add <name> <url>`."
+Closing line: "Run `/pantry-digest` to use these sources." (or, if
+`custom:` is empty: "Say 'add <name> <url>' to add your own.")
 
 ## Steps
 
